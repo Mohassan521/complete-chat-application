@@ -40,7 +40,12 @@ dependencies:
   cloud_firestore: ^4.17.3
   firebase_storage: ^11.7.5
   firebase_messaging: ^14.9.2
-  emoji_picker_flutter: ^2.2.0
+  dash_chat_2: ^0.0.20
+  firebase_analytics: ^10.10.5
+  google_fonts: ^6.2.1
+  delightful_toast: ^1.1.0
+  get_it: ^7.7.0
+  image_picker: ^1.1.1
 
 dev_dependencies:
   flutter_test:
