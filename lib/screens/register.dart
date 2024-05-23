@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:messenger/constants.dart';
+import 'package:messenger/models/userProfile.dart';
 import 'package:messenger/services/alert_service.dart';
 import 'package:messenger/services/auth_service.dart';
+import 'package:messenger/services/database_service.dart';
 import 'package:messenger/services/media_service.dart';
 import 'package:messenger/services/navigation_service.dart';
 import 'package:messenger/services/storage_service.dart';
@@ -26,8 +28,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   late AuthService _authService;
   late NavigationService _navigationService;
-  // late AlertService _alertService;
+  late AlertService _alertService;
   late StorageService _storageService;
+  late DatabaseService _databaseService;
 
   File? selectedImage;
   bool isLoading = false;
@@ -38,9 +41,10 @@ class _RegisterPageState extends State<RegisterPage> {
     super.initState();
     _authService = getIt.get<AuthService>();
     _navigationService = getIt.get<NavigationService>();
-    // _alertService = getIt.get<AlertService>();
+    _alertService = getIt.get<AlertService>();
     _mediaService = getIt.get<MediaService>();
     _storageService = getIt.get<StorageService>();
+    _databaseService = getIt.get<DatabaseService>();
   }
 
   @override
@@ -204,6 +208,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         setState(() {
                           isLoading = true;
                         });
+                        // King123!
                         try {
                           if ((_loginFormKey.currentState?.validate() ??
                                   false) &&
@@ -217,9 +222,32 @@ class _RegisterPageState extends State<RegisterPage> {
                                 file: selectedImage!,
                                 uid: _authService.user!.uid,
                               );
+
+                              if (pfpUrl != null) {
+                                await _databaseService.createUserProfile(
+                                  userProfile: UserProfile(
+                                    uid: _authService.user!.uid,
+                                    name: name,
+                                    pfpURL: pfpUrl,
+                                  ),
+                                );
+
+                                _alertService.showToast(
+                                    text: "User successfully registered",
+                                    icon: Icons.check);
+
+                                _navigationService.pushNamed("/login");
+                              } else {
+                                throw Exception(
+                                    "Unable to upload profile picture");
+                              }
                             } else {
-                              print(result);
+                              throw Exception("Unable to register");
                             }
+                          } else {
+                            _alertService.showToast(
+                                text: "Failed to register, Please try again",
+                                icon: Icons.error);
                           }
                         } catch (e) {
                           print(e);
