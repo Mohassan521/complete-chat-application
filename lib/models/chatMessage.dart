@@ -15,7 +15,7 @@ class Chat {
     id = json['id'];
     participants = List<String>.from(json['participants']);
     messages =
-        List.from(json['messages']).map((m) => Message.fromJson(m)).toList();
+        List.from(json['message']).map((m) => Message.fromJson(m)).toList();
   }
 
   Map<String, dynamic> toJson() {

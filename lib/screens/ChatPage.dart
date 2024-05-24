@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:messenger/models/userProfile.dart';
+import 'package:messenger/screens/chatRoom.dart';
 import 'package:messenger/services/alert_service.dart';
 import 'package:messenger/services/auth_service.dart';
 import 'package:messenger/services/database_service.dart';
@@ -112,14 +113,23 @@ class _ChatPageState extends State<ChatPage> {
 
                                   if (!chatExists) {
                                     await _databaseService.createNewChat(
-                                        uid1: _authService.user!.uid,
-                                        uid2: user.uid!);
+                                      uid1: _authService.user!.uid,
+                                      uid2: user.uid!,
+                                    );
                                   }
+
+                                  _navigationService.push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatRoom(
+                                        chatUser: user,
+                                      ),
+                                    ),
+                                  );
                                 }),
                           );
                         }));
               }
-              return CircularProgressIndicator();
+              return Center(child: CircularProgressIndicator());
             },
           )
         ],
