@@ -76,7 +76,7 @@ class DatabaseService {
 
     await docRef.update(
       {
-        "message": FieldValue.arrayUnion(
+        "messages": FieldValue.arrayUnion(
           [
             message.toJson(),
           ],
@@ -87,7 +87,6 @@ class DatabaseService {
 
   Stream<DocumentSnapshot<Chat>> getChatData(String uid1, String uid2) {
     String chatID = generateChatId(uid1: uid1, uid2: uid2);
-    //return _chatsCollection!.doc(chatID).snapshots();
     return _chatsCollection?.doc(chatID).snapshots()
         as Stream<DocumentSnapshot<Chat>>;
   }

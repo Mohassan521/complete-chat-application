@@ -14,8 +14,11 @@ class Chat {
   Chat.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     participants = List<String>.from(json['participants']);
-    messages =
-        List.from(json['message']).map((m) => Message.fromJson(m)).toList();
+    // messages =
+    //     List.from(json['message']).map((m) => Message.fromJson(m)).toList();
+    messages = json['messages'] != null
+        ? List.from(json['messages']).map((m) => Message.fromJson(m)).toList()
+        : null;
   }
 
   Map<String, dynamic> toJson() {

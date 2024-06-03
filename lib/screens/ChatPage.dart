@@ -119,11 +119,9 @@ class _ChatPageState extends State<ChatPage> {
                                   }
 
                                   _navigationService.push(
-                                    MaterialPageRoute(
-                                      builder: (context) => ChatRoom(
-                                        chatUser: user,
-                                      ),
-                                    ),
+                                    MaterialPageRoute(builder: (context) {
+                                      return ChatRoom(chatUser: user);
+                                    }),
                                   );
                                 }),
                           );
