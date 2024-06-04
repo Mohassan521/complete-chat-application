@@ -11,7 +11,6 @@ import 'package:messenger/services/database_service.dart';
 import 'package:messenger/services/media_service.dart';
 import 'package:messenger/services/storage_service.dart';
 import 'package:messenger/utils.dart';
-
 import '../models/chatMessage.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -48,6 +47,20 @@ class _ChatRoomState extends State<ChatRoom> {
 
   Future<void> sendMessage(ChatMessage chatMessage) async {
     if (chatMessage.medias?.isNotEmpty ?? false) {
+      if (chatMessage.medias?.first.type == MediaType.file) {
+        Message message = Message(
+            senderID: chatMessage.user.id,
+            content: chatMessage.medias?.first.fileName,
+            messageType: MessageType.file,
+            sentAt: Timestamp.fromDate(chatMessage.createdAt));
+
+        await _databaseService.sendChatMessage(
+          currentUser!.id,
+          otherUser!.id,
+          message,
+        );
+      }
+
       if (chatMessage.medias?.first.type == MediaType.image) {
         Message message = Message(
           senderID: chatMessage.user.id,
@@ -78,6 +91,19 @@ class _ChatRoomState extends State<ChatRoom> {
 
   List<ChatMessage> _generateChatMessageList(List<Message> messages) {
     List<ChatMessage> chatMessage = messages.map((m) {
+      if (m.messageType == MessageType.file) {
+        return ChatMessage(
+          user: m.senderID == currentUser!.id ? currentUser! : otherUser!,
+          medias: [
+            ChatMedia(
+                url: m.content!,
+                fileName: m.content!.split("/").last,
+                type: MediaType.file)
+          ],
+          createdAt: m.sentAt!.toDate(),
+        );
+      }
+
       if (m.messageType == MessageType.Image) {
         return ChatMessage(
             user: m.senderID == currentUser!.id ? currentUser! : otherUser!,
@@ -194,38 +220,84 @@ class _ChatRoomState extends State<ChatRoom> {
                     showOtherUsersAvatar: true,
                     showTime: true,
                   ),
-                  inputOptions: InputOptions(alwaysShowSend: true, leading: [
-                    IconButton(
+                  inputOptions: InputOptions(
+                    alwaysShowSend: true,
+                    leading: [
+                      IconButton(
+                          onPressed: () async {
+                            File? file =
+                                await _mediaService.getImageFromGallery();
+
+                            if (file != null) {
+                              String chatID = generateChatId(
+                                  uid1: currentUser!.id, uid2: otherUser!.id);
+
+                              String? downloadURL = await _storageService
+                                  .uploadChatFiles(file: file, chatID: chatID);
+                              if (downloadURL != null) {
+                                ChatMessage chatMessage = ChatMessage(
+                                  user: currentUser!,
+                                  medias: [
+                                    ChatMedia(
+                                      url: downloadURL,
+                                      fileName: "",
+                                      type: MediaType.image,
+                                    )
+                                  ],
+                                  createdAt: DateTime.now(),
+                                );
+
+                                sendMessage(chatMessage);
+                              }
+                            }
+                          },
+                          icon: Icon(
+                            Icons.image,
+                            color: Theme.of(context).colorScheme.primary,
+                          )),
+                      IconButton(
                         onPressed: () async {
-                          File? file =
-                              await _mediaService.getImageFromGallery();
+                          File? file = await _mediaService.getFileFromDevice();
 
                           if (file != null) {
                             String chatID = generateChatId(
                                 uid1: currentUser!.id, uid2: otherUser!.id);
 
+                            String fileExt =
+                                file.path.split(Platform.pathSeparator).last;
+                            // print(
+                            //     "file path name: ${file.path.split('/').last}");
+
                             String? downloadURL = await _storageService
-                                .uploadChatFiles(file: file, chatID: chatID);
+                                .uploadChatPdfFiles(file: file, chatID: chatID);
+
+                            print("download url before if body: $downloadURL");
                             if (downloadURL != null) {
+                              print(
+                                  "File downloaded successfully: $downloadURL");
                               ChatMessage chatMessage = ChatMessage(
-                                  user: currentUser!,
-                                  medias: [
-                                    ChatMedia(
-                                        url: downloadURL,
-                                        fileName: "",
-                                        type: MediaType.image)
-                                  ],
-                                  createdAt: DateTime.now());
+                                user: currentUser!,
+                                medias: [
+                                  ChatMedia(
+                                    url: downloadURL,
+                                    fileName: fileExt,
+                                    type: MediaType.file,
+                                  )
+                                ],
+                                createdAt: DateTime.now(),
+                              );
 
                               sendMessage(chatMessage);
                             }
                           }
                         },
                         icon: Icon(
-                          Icons.image,
+                          Icons.attach_file,
                           color: Theme.of(context).colorScheme.primary,
-                        ))
-                  ]),
+                        ),
+                      ),
+                    ],
+                  ),
                   currentUser: currentUser!,
                   onSend: sendMessage,
                   messages: messages);
