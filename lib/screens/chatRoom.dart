@@ -11,6 +11,7 @@ import 'package:messenger/services/database_service.dart';
 import 'package:messenger/services/media_service.dart';
 import 'package:messenger/services/storage_service.dart';
 import 'package:messenger/utils.dart';
+import 'package:messenger/widgets/pdfviewer.dart';
 import '../models/chatMessage.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -263,18 +264,15 @@ class _ChatRoomState extends State<ChatRoom> {
                             String chatID = generateChatId(
                                 uid1: currentUser!.id, uid2: otherUser!.id);
 
-                            String fileExt =
-                                file.path.split(Platform.pathSeparator).last;
-                            // print(
-                            //     "file path name: ${file.path.split('/').last}");
+                            String fileExt = file.path.split("/").last;
 
                             String? downloadURL = await _storageService
                                 .uploadChatPdfFiles(file: file, chatID: chatID);
 
-                            print("download url before if body: $downloadURL");
                             if (downloadURL != null) {
-                              print(
-                                  "File downloaded successfully: $downloadURL");
+                              // print(
+                              //     "File downloaded successfully: $downloadURL");
+
                               ChatMessage chatMessage = ChatMessage(
                                 user: currentUser!,
                                 medias: [
@@ -288,6 +286,8 @@ class _ChatRoomState extends State<ChatRoom> {
                               );
 
                               sendMessage(chatMessage);
+
+                              // PDFViewer(url: downloadURL);
                             }
                           }
                         },
