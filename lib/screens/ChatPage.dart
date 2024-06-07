@@ -40,11 +40,11 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.only(left: 20.5, right: 16, top: 10),
+              padding: const EdgeInsets.only(left: 20.5, right: 16, top: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     "Conversations",
                     style:
                         TextStyle(fontSize: 30.5, fontWeight: FontWeight.bold),
@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
                         _navigationService.pushReplacement("/login");
                       }
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.logout,
                     ),
                   )
@@ -67,7 +67,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 16, left: 16, right: 16),
+            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
             child: TextField(
               decoration: InputDecoration(
                 hintText: "Search...",
@@ -79,7 +79,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 filled: true,
                 fillColor: Colors.grey.shade100,
-                contentPadding: EdgeInsets.all(8),
+                contentPadding: const EdgeInsets.all(8),
                 enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide(color: Colors.grey.shade100)),
@@ -90,44 +90,49 @@ class _ChatPageState extends State<ChatPage> {
             stream: _databaseService.getUserProfiles(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Center(
+                return const Center(
                   child: Text("No Data Available"),
                 );
               } else if (snapshot.hasData && snapshot.data != null) {
                 return Expanded(
-                    child: ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        itemCount: snapshot.data!.docs.length,
-                        itemBuilder: (context, index) {
-                          UserProfile user = snapshot.data!.docs[index].data();
-                          //print(user.name);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10.0),
-                            child: ConversationList(
-                                userProfile: user,
-                                onTap: () async {
-                                  final chatExists =
-                                      await _databaseService.checkChatExists(
-                                          uid1: _authService.user!.uid,
-                                          uid2: user.uid!);
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      UserProfile user = snapshot.data!.docs[index].data();
+                      //print(user.name);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: ConversationList(
+                          userProfile: user,
+                          onTap: () async {
+                            final chatExists =
+                                await _databaseService.checkChatExists(
+                                    uid1: _authService.user!.uid,
+                                    uid2: user.uid!);
 
-                                  if (!chatExists) {
-                                    await _databaseService.createNewChat(
-                                      uid1: _authService.user!.uid,
-                                      uid2: user.uid!,
-                                    );
-                                  }
+                            if (!chatExists) {
+                              await _databaseService.createNewChat(
+                                uid1: _authService.user!.uid,
+                                uid2: user.uid!,
+                              );
+                            }
 
-                                  _navigationService.push(
-                                    MaterialPageRoute(builder: (context) {
-                                      return ChatRoom(chatUser: user);
-                                    }),
-                                  );
-                                }),
-                          );
-                        }));
+                            _navigationService.push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ChatRoom(chatUser: user);
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                );
               }
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             },
           )
         ],

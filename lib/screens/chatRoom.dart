@@ -7,11 +7,11 @@ import 'package:get_it/get_it.dart';
 import 'package:messenger/models/message.dart';
 import 'package:messenger/models/userProfile.dart';
 import 'package:messenger/services/auth_service.dart';
+import 'package:messenger/services/callScreen.dart';
 import 'package:messenger/services/database_service.dart';
 import 'package:messenger/services/media_service.dart';
 import 'package:messenger/services/storage_service.dart';
 import 'package:messenger/utils.dart';
-import 'package:messenger/widgets/pdfviewer.dart';
 import '../models/chatMessage.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -137,7 +137,7 @@ class _ChatRoomState extends State<ChatRoom> {
           backgroundColor: Colors.white,
           flexibleSpace: SafeArea(
             child: Container(
-              padding: EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.only(right: 16),
               child: Row(
                 children: [
                   IconButton(
@@ -167,8 +167,8 @@ class _ChatRoomState extends State<ChatRoom> {
                       children: [
                         Text(
                           widget.chatUser?.name ?? "",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(
                           height: 6,
@@ -181,16 +181,28 @@ class _ChatRoomState extends State<ChatRoom> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.call,
-                    color: Colors.black,
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CallScreen(
+                                    callID: "1",
+                                    userId: otherUser!.id,
+                                    username: otherUser!.firstName!,
+                                  )));
+                    },
+                    icon: const Icon(
+                      Icons.call,
+                      color: Colors.black,
+                    ),
                   ),
-                  SizedBox(
-                    width: 12,
-                  ),
-                  Icon(
-                    Icons.video_call,
-                    color: Colors.black,
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.video_call,
+                      color: Colors.black,
+                    ),
                   ),
                 ],
               ),
@@ -207,7 +219,7 @@ class _ChatRoomState extends State<ChatRoom> {
               print("chat waly messages ${snapshot.data?.data()}");
 
               print("current user: ${currentUser!.id}");
-              print("other user: ${otherUser!.id}");
+              print("other user: ${otherUser!.firstName}");
               print("chat id: , ${chat?.id!}");
 
               if (chat != null && chat.messages != null) {
@@ -225,37 +237,38 @@ class _ChatRoomState extends State<ChatRoom> {
                     alwaysShowSend: true,
                     leading: [
                       IconButton(
-                          onPressed: () async {
-                            File? file =
-                                await _mediaService.getImageFromGallery();
+                        onPressed: () async {
+                          File? file =
+                              await _mediaService.getImageFromGallery();
 
-                            if (file != null) {
-                              String chatID = generateChatId(
-                                  uid1: currentUser!.id, uid2: otherUser!.id);
+                          if (file != null) {
+                            String chatID = generateChatId(
+                                uid1: currentUser!.id, uid2: otherUser!.id);
 
-                              String? downloadURL = await _storageService
-                                  .uploadChatFiles(file: file, chatID: chatID);
-                              if (downloadURL != null) {
-                                ChatMessage chatMessage = ChatMessage(
-                                  user: currentUser!,
-                                  medias: [
-                                    ChatMedia(
-                                      url: downloadURL,
-                                      fileName: "",
-                                      type: MediaType.image,
-                                    )
-                                  ],
-                                  createdAt: DateTime.now(),
-                                );
+                            String? downloadURL = await _storageService
+                                .uploadChatFiles(file: file, chatID: chatID);
+                            if (downloadURL != null) {
+                              ChatMessage chatMessage = ChatMessage(
+                                user: currentUser!,
+                                medias: [
+                                  ChatMedia(
+                                    url: downloadURL,
+                                    fileName: "",
+                                    type: MediaType.image,
+                                  )
+                                ],
+                                createdAt: DateTime.now(),
+                              );
 
-                                sendMessage(chatMessage);
-                              }
+                              sendMessage(chatMessage);
                             }
-                          },
-                          icon: Icon(
-                            Icons.image,
-                            color: Theme.of(context).colorScheme.primary,
-                          )),
+                          }
+                        },
+                        icon: Icon(
+                          Icons.image,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
                       IconButton(
                         onPressed: () async {
                           File? file = await _mediaService.getFileFromDevice();
